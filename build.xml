@@ -1,0 +1,87 @@
+<project name="File Renamer" default="jar" basedir=".">
+    <description>
+    "File Renamer"
+    </description>
+
+  <!--  load system environment variables and add env. prefix to them -->
+  <property environment="env" />
+
+<!--   <property name="targetsDir" value="${env.TARGETS_HOME}"/> -->
+
+  <!-- set global properties for this build -->
+  <property name="src" location="." />
+  <property name="build" location="build" />
+
+	 
+  <path id="compile.classpath">
+     <pathelement path="${src}"/>
+       <fileset dir="${src}/../jar">
+           <include name="*.jar" />
+       </fileset>
+  </path>
+
+   <!-- jars for classpath -->
+   <path id="run.classpath">
+      <pathelement path="${src}/build"/>
+      <pathelement path="${build}"/>
+   </path>
+
+  <target name="init" >
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+
+    <!-- use jikes if available -->
+    <condition property="build.compiler" value="jikes">
+        <or>
+           <available file="jikes"     filepath="${env.PATH}" />
+           <available file="jikes.exe" filepath="${env.PATH}" />
+           <available file="jikes.exe" filepath="${env.Path}" />
+        </or>
+    </condition>
+  </target>
+
+   <!-- plugins for classpath -->
+   <path id="targets.plugins">
+       <fileset dir="${src}/plugins">
+           <include name="*.jar" />
+       </fileset>
+   </path>
+
+  <!-- Compile the java code from ${src} into ${build} -->
+  <target name="compile" depends="init" description="compile the source ">
+      <javac srcdir="${src}" destdir="${build}"
+          includes="*.java" debug="true">
+          <classpath refid="compile.classpath" />
+          <compilerarg value="+E" compiler="jikes"/>
+      </javac>
+  </target>
+
+  <target name="jar" depends="compile" description="jar the source">
+  <jar jarfile="filerenamer.jar" basedir="${build}"
+       includes="*.class" >
+      <manifest>
+	  <attribute name="Main-Class" value="FileRenamer"/>
+      </manifest>
+  </jar>	      
+  </target>
+
+
+  <!-- Run targets -->
+  <target name="run" depends="jar" description="Run targets" >
+      <java classname="FileRenamer" fork="yes" dir="${src}">
+          <classpath>
+	      <path refid="compile.classpath" />
+	      <path refid="run.classpath" />
+	  </classpath>
+      </java>
+  </target>
+
+
+  <target name="clean"
+        description="clean up" >
+    <!-- Delete the ${build} directory trees -->
+    <delete dir="${build}"/>
+  </target>
+</project>
