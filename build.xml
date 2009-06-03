@@ -15,7 +15,7 @@
 	 
   <path id="compile.classpath">
      <pathelement path="${src}"/>
-       <fileset dir="${src}/../jar">
+       <fileset dir="jar">
            <include name="*.jar" />
        </fileset>
   </path>
